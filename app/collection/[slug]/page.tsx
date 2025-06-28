@@ -14,10 +14,12 @@ export default function CollectionPage({ params }: { params: { slug: string } })
   const products = collectionProducts[slug] || [];
 
   return (
-    <CollectionClientPage 
-      collection={collection} 
-      products={products} 
-      slug={slug}
-    />
+    <>
+      <CollectionClientPage 
+        collection={collection} 
+        products={products} 
+        slug={slug}
+      />
+    </>
   );
 }
