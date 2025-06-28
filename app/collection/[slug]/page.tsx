@@ -9,6 +9,12 @@ import { ShoppingCart, Heart, Star } from 'lucide-react';
 import { collections, collectionProducts } from '@/lib/data';
 import { useState } from 'react';
 
+export async function generateStaticParams() {
+  return collections.map((collection) => ({
+    slug: collection.slug,
+  }));
+}
+
 export default function CollectionPage() {
   const params = useParams();
   const slug = params.slug as string;
