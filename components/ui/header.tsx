@@ -23,107 +23,149 @@ export function Header() {
             <Link href="/" className="text-gray-300 hover:text-white transition-colors">
               Inicio
             </Link>
-            <Link href="/collections" className="text-gray-300 hover:text-white transition-colors">
-              Colecciones
-            </Link>
             <Link href="/products" className="text-gray-300 hover:text-white transition-colors">
               Productos
             </Link>
+            <Link href="/collections" className="text-gray-300 hover:text-white transition-colors">
+              Colecciones
+            </Link>
+            <Link href="/categories" className="text-gray-300 hover:text-white transition-colors">
+              Categorías
+            </Link>
             <Link href="/offers" className="text-gray-300 hover:text-white transition-colors">
               Ofertas
-            </Link>
-            <Link href="/about" className="text-gray-300 hover:text-white transition-colors">
-              Nosotros
             </Link>
           </nav>
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <button
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              <Search className="w-5 h-5" />
-            </button>
-            <button className="text-gray-300 hover:text-white transition-colors relative">
+            {/* Search */}
+            <div className="relative">
+              {isSearchOpen ? (
+                <div className="flex items-center">
+                  <input
+                    type="text"
+                    placeholder="Buscar productos..."
+                    className="bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-2 w-64 focus:outline-none focus:border-red-600"
+                    autoFocus
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsSearchOpen(false)}
+                    className="ml-2 text-gray-400 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsSearchOpen(true)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <Search className="w-5 h-5" />
+                </Button>
+              )}
+            </div>
+
+            {/* Wishlist */}
+            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white relative">
               <Heart className="w-5 h-5" />
-              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                2
+              <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                0
               </span>
-            </button>
-            <button className="text-gray-300 hover:text-white transition-colors relative">
+            </Button>
+
+            {/* Cart */}
+            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white relative">
               <ShoppingCart className="w-5 h-5" />
-              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                3
+              <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                0
               </span>
-            </button>
-            <Button variant="outline" size="sm" className="border-gray-600 text-white hover:bg-red-600 hover:border-red-600">
-              <User className="w-4 h-4 mr-2" />
-              Cuenta
+            </Button>
+
+            {/* User */}
+            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+              <User className="w-5 h-5" />
             </Button>
           </div>
 
           {/* Mobile Menu Button */}
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
+            className="md:hidden text-gray-400 hover:text-white"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden text-gray-300 hover:text-white transition-colors"
           >
             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          </Button>
         </div>
-
-        {/* Search Bar */}
-        {isSearchOpen && (
-          <div className="mt-4 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Buscar productos, colecciones..."
-              className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:border-red-600"
-              autoFocus
-            />
-          </div>
-        )}
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t border-gray-800 pt-4">
-            <nav className="flex flex-col space-y-4">
-              <Link href="/" className="text-gray-300 hover:text-white transition-colors">
+          <div className="md:hidden mt-4 pb-4 border-t border-gray-800">
+            <nav className="flex flex-col space-y-4 mt-4">
+              <Link 
+                href="/" 
+                className="text-gray-300 hover:text-white transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 Inicio
               </Link>
-              <Link href="/collections" className="text-gray-300 hover:text-white transition-colors">
-                Colecciones
-              </Link>
-              <Link href="/products" className="text-gray-300 hover:text-white transition-colors">
+              <Link 
+                href="/products" 
+                className="text-gray-300 hover:text-white transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 Productos
               </Link>
-              <Link href="/offers" className="text-gray-300 hover:text-white transition-colors">
+              <Link 
+                href="/collections" 
+                className="text-gray-300 hover:text-white transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Colecciones
+              </Link>
+              <Link 
+                href="/categories" 
+                className="text-gray-300 hover:text-white transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Categorías
+              </Link>
+              <Link 
+                href="/offers" 
+                className="text-gray-300 hover:text-white transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 Ofertas
               </Link>
-              <Link href="/about" className="text-gray-300 hover:text-white transition-colors">
-                Nosotros
-              </Link>
             </nav>
-            
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-800">
-              <div className="flex items-center space-x-4">
-                <button className="text-gray-300 hover:text-white transition-colors relative">
-                  <Heart className="w-5 h-5" />
-                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    2
-                  </span>
-                </button>
-                <button className="text-gray-300 hover:text-white transition-colors relative">
-                  <ShoppingCart className="w-5 h-5" />
-                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    3
-                  </span>
-                </button>
-              </div>
-              <Button variant="outline" size="sm" className="border-gray-600 text-white hover:bg-red-600 hover:border-red-600">
-                <User className="w-4 h-4 mr-2" />
-                Cuenta
+
+            {/* Mobile Search */}
+            <div className="mt-4">
+              <input
+                type="text"
+                placeholder="Buscar productos..."
+                className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600"
+              />
+            </div>
+
+            {/* Mobile Actions */}
+            <div className="flex items-center justify-around mt-4 pt-4 border-t border-gray-800">
+              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white flex flex-col items-center">
+                <Heart className="w-5 h-5 mb-1" />
+                <span className="text-xs">Favoritos</span>
+              </Button>
+              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white flex flex-col items-center">
+                <ShoppingCart className="w-5 h-5 mb-1" />
+                <span className="text-xs">Carrito</span>
+              </Button>
+              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white flex flex-col items-center">
+                <User className="w-5 h-5 mb-1" />
+                <span className="text-xs">Cuenta</span>
               </Button>
             </div>
           </div>
