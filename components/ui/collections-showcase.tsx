@@ -1,34 +1,43 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { collections } from '@/lib/data';
 
 export function CollectionsShowcase() {
   return (
-    <section className="bg-black py-12">
+    <section className="bg-black py-16">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-white mb-8">Colecciones</h2>
-        
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Colecciones
+          </h2>
+          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+            Explora productos exclusivos de tus series favoritas de Netflix
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {collections.map((collection) => (
-            <Link
-              key={collection.id}
-              href={`/collection/${collection.id}`}
-              className="group relative overflow-hidden rounded-lg aspect-video"
+            <Link 
+              key={collection.id} 
+              href={`/collection/${collection.slug}`}
+              className="group relative overflow-hidden rounded-lg aspect-[4/3] hover:scale-105 transition-transform duration-300"
             >
               <Image
                 src={collection.image}
                 alt={collection.name}
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                className="object-cover group-hover:scale-110 transition-transform duration-500"
               />
-              
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
-              
-              {/* Content */}
-              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <h3 className="text-2xl font-bold mb-2">{collection.name}</h3>
-                <p className="text-sm opacity-90">Ver Colección</p>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-6">
+                <h3 className="text-white text-2xl font-bold mb-2">
+                  {collection.name}
+                </h3>
+                <p className="text-red-400 font-medium hover:text-red-300 transition-colors">
+                  Ver Colección
+                </p>
               </div>
             </Link>
           ))}

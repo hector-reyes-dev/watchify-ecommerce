@@ -18,9 +18,12 @@ export interface Product {
 export interface Collection {
   id: string;
   name: string;
+  slug: string;
   image: string;
+  bannerImage: string;
   showTitle: string;
   productCount: number;
+  description: string;
 }
 
 export interface CartItem {
