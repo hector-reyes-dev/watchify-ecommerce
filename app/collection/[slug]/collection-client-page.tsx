@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { Header } from '@/components/ui/header';
 import { Footer } from '@/components/ui/footer';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Heart, Star } from 'lucide-react';
+import { ShoppingCart, Heart, Star, Check } from 'lucide-react';
 import { useState } from 'react';
 import { Collection, Product } from '@/types';
+import { useCart } from '@/contexts/cart-context';
 
 interface CollectionClientPageProps {
   collection: Collection | undefined;
@@ -17,6 +18,8 @@ interface CollectionClientPageProps {
 
 export default function CollectionClientPage({ collection, products, slug }: CollectionClientPageProps) {
   const [wishlist, setWishlist] = useState<string[]>([]);
+  const [addedToCart, setAddedToCart] = useState<string[]>([]);
+  const { addToCart } = useCart();
 
   if (!collection) {
     return (
@@ -35,6 +38,16 @@ export default function CollectionClientPage({ collection, products, slug }: Col
         ? prev.filter(id => id !== productId)
         : [...prev, productId]
     );
+  };
+
+  const handleAddToCart = (product: Product) => {
+    addToCart(product, 1);
+    setAddedToCart(prev => [...prev, product.id]);
+    
+    // Remove from added state after 3 seconds
+    setTimeout(() => {
+      setAddedToCart(prev => prev.filter(id => id !== product.id));
+    }, 3000);
   };
 
   return (
@@ -171,9 +184,25 @@ export default function CollectionClientPage({ collection, products, slug }: Col
                     )}
 
                     {/* Add to Cart Button */}
-                    <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 flex items-center justify-center space-x-2 transition-colors">
-                      <ShoppingCart className="w-4 h-4" />
-                      <span>Añadir al carrito</span>
+                    <Button 
+                      onClick={() => handleAddToCart(product)}
+                      className={`w-full font-semibold py-2 flex items-center justify-center space-x-2 transition-all ${
+                        addedToCart.includes(product.id)
+                          ? 'bg-green-600 hover:bg-green-700'
+                          : 'bg-red-600 hover:bg-red-700'
+                      } text-white`}
+                    >
+                      {addedToCart.includes(product.id) ? (
+                        <>
+                          <Check className="w-4 h-4" />
+                          <span>¡Agregado!</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart className="w-4 h-4" />
+                          <span>Añadir al carrito</span>
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>

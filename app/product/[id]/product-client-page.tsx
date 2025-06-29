@@ -5,8 +5,9 @@ import Image from 'next/image';
 import { Header } from '@/components/ui/header';
 import { Footer } from '@/components/ui/footer';
 import { Button } from '@/components/ui/button';
-import { Heart, ShoppingCart, Star, Truck, Shield, RotateCcw } from 'lucide-react';
+import { Heart, ShoppingCart, Star, Truck, Shield, RotateCcw, Check } from 'lucide-react';
 import { Product } from '@/types';
+import { useCart } from '@/contexts/cart-context';
 
 interface ProductClientPageProps {
   product: Product | undefined;
@@ -18,6 +19,9 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isAddedToCart, setIsAddedToCart] = useState(false);
+  
+  const { addToCart } = useCart();
 
   if (!product) {
     return (
@@ -31,6 +35,27 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
   }
 
   const images = product.images || [product.image];
+
+  const handleAddToCart = () => {
+    // Validate required selections
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      alert('Por favor selecciona una talla');
+      return;
+    }
+    
+    if (product.colors && product.colors.length > 0 && !selectedColor) {
+      alert('Por favor selecciona un color');
+      return;
+    }
+
+    addToCart(product, quantity, selectedSize, selectedColor);
+    setIsAddedToCart(true);
+    
+    // Reset the success state after 3 seconds
+    setTimeout(() => {
+      setIsAddedToCart(false);
+    }, 3000);
+  };
 
   return (
     <div className="min-h-screen bg-black">
@@ -115,7 +140,9 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
             {/* Size Selection */}
             {product.sizes && (
               <div className="space-y-3">
-                <p className="font-medium text-gray-300">Talla:</p>
+                <p className="font-medium text-gray-300">
+                  Talla: {selectedSize && <span className="text-white">{selectedSize}</span>}
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {product.sizes.map((size) => (
                     <button
@@ -137,7 +164,9 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
             {/* Color Selection */}
             {product.colors && (
               <div className="space-y-3">
-                <p className="font-medium text-gray-300">Color:</p>
+                <p className="font-medium text-gray-300">
+                  Color: {selectedColor && <span className="text-white capitalize">{selectedColor}</span>}
+                </p>
                 <div className="flex space-x-3">
                   {product.colors.map((color) => (
                     <button
@@ -150,7 +179,14 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
                         color === 'black' ? 'bg-black' :
                         color === 'red' ? 'bg-red-600' :
                         color === 'gray' ? 'bg-gray-500' :
-                        'bg-white'
+                        color === 'white' ? 'bg-white' :
+                        color === 'blue' ? 'bg-blue-600' :
+                        color === 'green' ? 'bg-green-600' :
+                        color === 'navy' ? 'bg-blue-900' :
+                        color === 'dark-red' ? 'bg-red-800' :
+                        color === 'dark-gray' ? 'bg-gray-700' :
+                        color === 'charcoal' ? 'bg-gray-800' :
+                        'bg-gray-400'
                       }`}
                     />
                   ))}
@@ -180,9 +216,25 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
 
             {/* Actions */}
             <div className="flex space-x-4 pt-4">
-              <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 font-semibold flex items-center justify-center space-x-2">
-                <ShoppingCart className="w-5 h-5" />
-                <span>Agregar al carrito</span>
+              <Button 
+                onClick={handleAddToCart}
+                className={`flex-1 py-3 font-semibold flex items-center justify-center space-x-2 transition-all ${
+                  isAddedToCart 
+                    ? 'bg-green-600 hover:bg-green-700' 
+                    : 'bg-red-600 hover:bg-red-700'
+                } text-white`}
+              >
+                {isAddedToCart ? (
+                  <>
+                    <Check className="w-5 h-5" />
+                    <span>¡Agregado al carrito!</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="w-5 h-5" />
+                    <span>Agregar al carrito</span>
+                  </>
+                )}
               </Button>
               
               <Button

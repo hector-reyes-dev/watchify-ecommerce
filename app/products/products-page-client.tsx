@@ -17,9 +17,11 @@ import {
   Heart,
   X,
   ChevronDown,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Check
 } from 'lucide-react';
 import { Product, Collection } from '@/types';
+import { useCart } from '@/contexts/cart-context';
 
 interface ProductsPageClientProps {
   products: Product[];
@@ -41,6 +43,9 @@ export default function ProductsPageClient({ products, collections }: ProductsPa
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [wishlist, setWishlist] = useState<string[]>([]);
+  const [addedToCart, setAddedToCart] = useState<string[]>([]);
+  
+  const { addToCart } = useCart();
 
   // Update search term when URL params change
   useEffect(() => {
@@ -176,6 +181,16 @@ export default function ProductsPageClient({ products, collections }: ProductsPa
         ? prev.filter(id => id !== productId)
         : [...prev, productId]
     );
+  };
+
+  const handleAddToCart = (product: Product) => {
+    addToCart(product, 1);
+    setAddedToCart(prev => [...prev, product.id]);
+    
+    // Remove from added state after 3 seconds
+    setTimeout(() => {
+      setAddedToCart(prev => prev.filter(id => id !== product.id));
+    }, 3000);
   };
 
   const clearFilters = () => {
@@ -552,9 +567,25 @@ export default function ProductsPageClient({ products, collections }: ProductsPa
                             </div>
 
                             {/* Add to Cart Button */}
-                            <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 flex items-center justify-center space-x-2 transition-colors">
-                              <ShoppingCart className="w-4 h-4" />
-                              <span>Añadir al carrito</span>
+                            <Button 
+                              onClick={() => handleAddToCart(product)}
+                              className={`w-full font-semibold py-2 flex items-center justify-center space-x-2 transition-all ${
+                                addedToCart.includes(product.id)
+                                  ? 'bg-green-600 hover:bg-green-700'
+                                  : 'bg-red-600 hover:bg-red-700'
+                              } text-white`}
+                            >
+                              {addedToCart.includes(product.id) ? (
+                                <>
+                                  <Check className="w-4 h-4" />
+                                  <span>¡Agregado!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <ShoppingCart className="w-4 h-4" />
+                                  <span>Añadir al carrito</span>
+                                </>
+                              )}
                             </Button>
                           </div>
                         </div>
@@ -642,10 +673,24 @@ export default function ProductsPageClient({ products, collections }: ProductsPa
                                 
                                 <Button 
                                   size="sm"
-                                  className="bg-red-600 hover:bg-red-700 text-white"
+                                  onClick={() => handleAddToCart(product)}
+                                  className={`transition-all ${
+                                    addedToCart.includes(product.id)
+                                      ? 'bg-green-600 hover:bg-green-700'
+                                      : 'bg-red-600 hover:bg-red-700'
+                                  } text-white`}
                                 >
-                                  <ShoppingCart className="w-4 h-4 mr-1" />
-                                  Añadir
+                                  {addedToCart.includes(product.id) ? (
+                                    <>
+                                      <Check className="w-4 h-4 mr-1" />
+                                      ¡Agregado!
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ShoppingCart className="w-4 h-4 mr-1" />
+                                      Añadir
+                                    </>
+                                  )}
                                 </Button>
                               </div>
                             </div>
