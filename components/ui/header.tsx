@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Search, ShoppingCart, User, Menu, X, Heart } from 'lucide-react';
-import { Button } from './button';
+import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/cart-context';
 
 export function Header() {
@@ -11,6 +11,9 @@ export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { getCartItemsCount } = useCart();
   const cartItemsCount = getCartItemsCount();
+
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const toggleSearch = () => setIsSearchOpen(!isSearchOpen);
 
   return (
     <header className="bg-black border-b border-gray-800 sticky top-0 z-50">
@@ -26,16 +29,16 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-white hover:text-red-400 transition-colors">
+            <Link href="/" className="text-gray-300 hover:text-white transition-colors">
               Inicio
             </Link>
-            <Link href="/products" className="text-white hover:text-red-400 transition-colors">
+            <Link href="/products" className="text-gray-300 hover:text-white transition-colors">
               Productos
             </Link>
-            <Link href="/collections" className="text-white hover:text-red-400 transition-colors">
+            <Link href="/collections" className="text-gray-300 hover:text-white transition-colors">
               Colecciones
             </Link>
-            <Link href="#" className="text-white hover:text-red-400 transition-colors">
+            <Link href="#" className="text-gray-300 hover:text-white transition-colors">
               Ofertas
             </Link>
           </nav>
@@ -45,42 +48,41 @@ export function Header() {
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:text-red-400 hover:bg-gray-800"
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              onClick={toggleSearch}
+              className="text-gray-300 hover:text-white"
             >
-              <Search className="w-4 h-4" />
+              <Search className="w-5 h-5" />
             </Button>
             
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:text-red-400 hover:bg-gray-800"
+              className="text-gray-300 hover:text-white"
             >
-              <Heart className="w-4 h-4" />
+              <Heart className="w-5 h-5" />
             </Button>
-
+            
             <Link href="/cart">
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-white hover:text-red-400 hover:bg-gray-800 relative"
+                className="text-gray-300 hover:text-white relative"
               >
-                <ShoppingCart className="w-4 h-4" />
+                <ShoppingCart className="w-5 h-5" />
                 {cartItemsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
-                    {cartItemsCount > 99 ? '99+' : cartItemsCount}
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {cartItemsCount}
                   </span>
                 )}
-                <span className="ml-1">Carrito</span>
               </Button>
             </Link>
-
+            
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:text-red-400 hover:bg-gray-800"
+              className="text-gray-300 hover:text-white"
             >
-              <User className="w-4 h-4" />
+              <User className="w-5 h-5" />
             </Button>
           </div>
 
@@ -88,10 +90,10 @@ export function Header() {
           <Button
             variant="ghost"
             size="sm"
-            className="md:hidden text-white"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={toggleMenu}
+            className="md:hidden text-gray-300 hover:text-white"
           >
-            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </Button>
         </div>
 
@@ -102,8 +104,8 @@ export function Header() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Buscar productos, series..."
-                className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:border-red-600 transition-colors"
+                placeholder="Buscar productos, colecciones..."
+                className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:border-red-600"
                 autoFocus
               />
             </div>
@@ -116,28 +118,28 @@ export function Header() {
             <nav className="flex flex-col space-y-4">
               <Link 
                 href="/" 
-                className="text-white hover:text-red-400 transition-colors"
+                className="text-gray-300 hover:text-white transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Inicio
               </Link>
               <Link 
                 href="/products" 
-                className="text-white hover:text-red-400 transition-colors"
+                className="text-gray-300 hover:text-white transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Productos
               </Link>
               <Link 
                 href="/collections" 
-                className="text-white hover:text-red-400 transition-colors"
+                className="text-gray-300 hover:text-white transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Colecciones
               </Link>
               <Link 
                 href="#" 
-                className="text-white hover:text-red-400 transition-colors"
+                className="text-gray-300 hover:text-white transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Ofertas
@@ -147,33 +149,33 @@ export function Header() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-white hover:text-red-400"
+                  className="text-gray-300 hover:text-white"
                 >
-                  <Heart className="w-4 h-4" />
+                  <Heart className="w-5 h-5" />
                 </Button>
-
-                <Link href="/cart" onClick={() => setIsMenuOpen(false)}>
+                
+                <Link href="/cart">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-white hover:text-red-400 relative"
+                    className="text-gray-300 hover:text-white relative"
+                    onClick={() => setIsMenuOpen(false)}
                   >
-                    <ShoppingCart className="w-4 h-4" />
+                    <ShoppingCart className="w-5 h-5" />
                     {cartItemsCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
-                        {cartItemsCount > 99 ? '99+' : cartItemsCount}
+                      <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {cartItemsCount}
                       </span>
                     )}
-                    <span className="ml-1">Carrito ({cartItemsCount})</span>
                   </Button>
                 </Link>
-
+                
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-white hover:text-red-400"
+                  className="text-gray-300 hover:text-white"
                 >
-                  <User className="w-4 h-4" />
+                  <User className="w-5 h-5" />
                 </Button>
               </div>
             </nav>
