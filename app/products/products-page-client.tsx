@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Header } from '@/components/ui/header';
@@ -26,7 +27,13 @@ interface ProductsPageClientProps {
 }
 
 export default function ProductsPageClient({ products, collections }: ProductsPageClientProps) {
-  const [searchTerm, setSearchTerm] = useState('');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  // Get initial search from URL params
+  const initialSearch = searchParams.get('search') || '';
+  
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 200]);
@@ -34,6 +41,12 @@ export default function ProductsPageClient({ products, collections }: ProductsPa
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [wishlist, setWishlist] = useState<string[]>([]);
+
+  // Update search term when URL params change
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') || '';
+    setSearchTerm(urlSearch);
+  }, [searchParams]);
 
   // Get unique categories
   const categories = useMemo(() => {
@@ -47,45 +60,99 @@ export default function ProductsPageClient({ products, collections }: ProductsPa
     }));
   }, [products]);
 
-  // Filter products
+  // Enhanced search function
+  const searchProducts = (products: Product[], query: string) => {
+    if (!query.trim()) return products;
+    
+    const searchTerms = query.toLowerCase().trim().split(' ');
+    
+    return products.filter(product => {
+      const searchableText = [
+        product.name,
+        product.description,
+        product.collection,
+        product.category
+      ].join(' ').toLowerCase();
+      
+      // Check if all search terms are found in the searchable text
+      return searchTerms.every(term => searchableText.includes(term));
+    });
+  };
+
+  // Filter products with enhanced search
   const filteredProducts = useMemo(() => {
-    return products
-      .filter(product => {
-        // Search filter
-        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            product.collection.toLowerCase().includes(searchTerm.toLowerCase());
-        
-        // Collection filter
-        const matchesCollection = selectedCollections.length === 0 || 
-                                selectedCollections.includes(product.collection);
-        
-        // Category filter
-        const matchesCategory = selectedCategories.length === 0 || 
-                              selectedCategories.includes(product.category);
-        
-        // Price filter
-        const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
-        
-        return matchesSearch && matchesCollection && matchesCategory && matchesPrice;
-      })
-      .sort((a, b) => {
-        switch (sortBy) {
-          case 'name':
-            return a.name.localeCompare(b.name);
-          case 'price-low':
-            return a.price - b.price;
-          case 'price-high':
-            return b.price - a.price;
-          case 'newest':
-            return a.id.localeCompare(b.id);
-          case 'popular':
-            return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
-          default:
-            return 0;
-        }
-      });
+    let filtered = products;
+    
+    // Apply search filter first
+    if (searchTerm.trim()) {
+      filtered = searchProducts(filtered, searchTerm);
+    }
+    
+    // Apply other filters
+    filtered = filtered.filter(product => {
+      // Collection filter
+      const matchesCollection = selectedCollections.length === 0 || 
+                              selectedCollections.includes(product.collection);
+      
+      // Category filter
+      const matchesCategory = selectedCategories.length === 0 || 
+                            selectedCategories.includes(product.category);
+      
+      // Price filter
+      const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
+      
+      return matchesCollection && matchesCategory && matchesPrice;
+    });
+    
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'price-low':
+          return a.price - b.price;
+        case 'price-high':
+          return b.price - a.price;
+        case 'newest':
+          return a.id.localeCompare(b.id);
+        case 'popular':
+          return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
+        case 'relevance':
+          // If there's a search term, sort by relevance
+          if (searchTerm.trim()) {
+            const aRelevance = calculateRelevance(a, searchTerm);
+            const bRelevance = calculateRelevance(b, searchTerm);
+            return bRelevance - aRelevance;
+          }
+          return 0;
+        default:
+          return 0;
+      }
+    });
   }, [products, searchTerm, selectedCollections, selectedCategories, priceRange, sortBy]);
+
+  // Calculate search relevance score
+  const calculateRelevance = (product: Product, query: string) => {
+    const searchTerms = query.toLowerCase().trim().split(' ');
+    let score = 0;
+    
+    searchTerms.forEach(term => {
+      // Higher score for matches in name
+      if (product.name.toLowerCase().includes(term)) {
+        score += 10;
+      }
+      // Medium score for matches in collection
+      if (product.collection.toLowerCase().includes(term)) {
+        score += 5;
+      }
+      // Lower score for matches in description
+      if (product.description.toLowerCase().includes(term)) {
+        score += 2;
+      }
+    });
+    
+    return score;
+  };
 
   const toggleCollection = (collection: string) => {
     setSelectedCollections(prev => 
@@ -116,10 +183,24 @@ export default function ProductsPageClient({ products, collections }: ProductsPa
     setSelectedCategories([]);
     setPriceRange([0, 200]);
     setSearchTerm('');
+    // Update URL to remove search params
+    router.push('/products');
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    
+    // Update URL with search parameter
+    if (value.trim()) {
+      router.push(`/products?search=${encodeURIComponent(value.trim())}`);
+    } else {
+      router.push('/products');
+    }
   };
 
   const activeFiltersCount = selectedCollections.length + selectedCategories.length + 
-    (priceRange[0] > 0 || priceRange[1] < 200 ? 1 : 0);
+    (priceRange[0] > 0 || priceRange[1] < 200 ? 1 : 0) + (searchTerm.trim() ? 1 : 0);
 
   return (
     <div className="min-h-screen bg-black">
@@ -138,13 +219,16 @@ export default function ProductsPageClient({ products, collections }: ProductsPa
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white max-w-4xl px-4">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Todos los Productos
+              {searchTerm.trim() ? `Resultados para "${searchTerm}"` : 'Todos los Productos'}
             </h1>
             <p className="text-lg text-gray-200 mb-4">
-              Descubre merchandising oficial de tus series favoritas de Netflix
+              {searchTerm.trim() 
+                ? `${filteredProducts.length} productos encontrados`
+                : 'Descubre merchandising oficial de tus series favoritas de Netflix'
+              }
             </p>
             <div className="flex items-center justify-center space-x-4 text-sm text-gray-300">
-              <span>{products.length} productos</span>
+              <span>{products.length} productos totales</span>
               <span>•</span>
               <span>Envío gratis +$50</span>
               <span>•</span>
@@ -197,11 +281,22 @@ export default function ProductsPageClient({ products, collections }: ProductsPa
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     type="text"
-                    placeholder="Buscar..."
+                    placeholder="Buscar por nombre o serie..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={handleSearchChange}
                     className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-red-600"
                   />
+                  {searchTerm && (
+                    <button
+                      onClick={() => {
+                        setSearchTerm('');
+                        router.push('/products');
+                      }}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-400"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -308,6 +403,7 @@ export default function ProductsPageClient({ products, collections }: ProductsPa
                 {activeFiltersCount > 0 && (
                   <p className="text-sm text-gray-400">
                     {activeFiltersCount} filtro{activeFiltersCount > 1 ? 's' : ''} aplicado{activeFiltersCount > 1 ? 's' : ''}
+                    {searchTerm.trim() && ` • Búsqueda: "${searchTerm}"`}
                   </p>
                 )}
               </div>
@@ -324,6 +420,7 @@ export default function ProductsPageClient({ products, collections }: ProductsPa
                   <option value="price-high">Precio: Mayor a Menor</option>
                   <option value="popular">Más Populares</option>
                   <option value="newest">Más Recientes</option>
+                  {searchTerm.trim() && <option value="relevance">Más Relevantes</option>}
                 </select>
 
                 {/* View Mode */}
@@ -357,8 +454,15 @@ export default function ProductsPageClient({ products, collections }: ProductsPa
               <div className="text-center py-16">
                 <div className="text-gray-400 mb-4">
                   <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <h3 className="text-xl font-semibold mb-2">No se encontraron productos</h3>
-                  <p className="mb-4">Intenta ajustar los filtros o términos de búsqueda</p>
+                  <h3 className="text-xl font-semibold mb-2">
+                    {searchTerm.trim() ? 'No se encontraron productos' : 'No hay productos disponibles'}
+                  </h3>
+                  <p className="mb-4">
+                    {searchTerm.trim() 
+                      ? `No encontramos productos que coincidan con "${searchTerm}"`
+                      : 'Intenta ajustar los filtros para ver más productos'
+                    }
+                  </p>
                   {activeFiltersCount > 0 && (
                     <Button
                       onClick={clearFilters}

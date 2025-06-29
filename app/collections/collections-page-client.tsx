@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Header } from '@/components/ui/header';
 import { Footer } from '@/components/ui/footer';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, Grid, List, Star, ArrowRight } from 'lucide-react';
+import { Search, Filter, Grid, List, Star, ArrowRight, X } from 'lucide-react';
 import { Collection } from '@/types';
 
 interface CollectionsPageClientProps {
@@ -14,16 +15,73 @@ interface CollectionsPageClientProps {
 }
 
 export default function CollectionsPageClient({ collections }: CollectionsPageClientProps) {
-  const [searchTerm, setSearchTerm] = useState('');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  // Get initial search from URL params
+  const initialSearch = searchParams.get('search') || '';
+  
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [sortBy, setSortBy] = useState('name');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const filteredCollections = collections
-    .filter(collection => 
-      collection.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      collection.showTitle.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) => {
+  // Update search term when URL params change
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') || '';
+    setSearchTerm(urlSearch);
+  }, [searchParams]);
+
+  // Enhanced search function for collections
+  const searchCollections = (collections: Collection[], query: string) => {
+    if (!query.trim()) return collections;
+    
+    const searchTerms = query.toLowerCase().trim().split(' ');
+    
+    return collections.filter(collection => {
+      const searchableText = [
+        collection.name,
+        collection.showTitle,
+        collection.description
+      ].join(' ').toLowerCase();
+      
+      // Check if all search terms are found in the searchable text
+      return searchTerms.every(term => searchableText.includes(term));
+    });
+  };
+
+  // Calculate search relevance score for collections
+  const calculateRelevance = (collection: Collection, query: string) => {
+    const searchTerms = query.toLowerCase().trim().split(' ');
+    let score = 0;
+    
+    searchTerms.forEach(term => {
+      // Higher score for matches in name
+      if (collection.name.toLowerCase().includes(term)) {
+        score += 10;
+      }
+      // Higher score for matches in show title
+      if (collection.showTitle.toLowerCase().includes(term)) {
+        score += 8;
+      }
+      // Lower score for matches in description
+      if (collection.description.toLowerCase().includes(term)) {
+        score += 2;
+      }
+    });
+    
+    return score;
+  };
+
+  const filteredCollections = useMemo(() => {
+    let filtered = collections;
+    
+    // Apply search filter
+    if (searchTerm.trim()) {
+      filtered = searchCollections(filtered, searchTerm);
+    }
+    
+    // Apply sorting
+    return filtered.sort((a, b) => {
       switch (sortBy) {
         case 'name':
           return a.name.localeCompare(b.name);
@@ -31,10 +89,36 @@ export default function CollectionsPageClient({ collections }: CollectionsPageCl
           return b.productCount - a.productCount;
         case 'newest':
           return a.id.localeCompare(b.id);
+        case 'relevance':
+          // If there's a search term, sort by relevance
+          if (searchTerm.trim()) {
+            const aRelevance = calculateRelevance(a, searchTerm);
+            const bRelevance = calculateRelevance(b, searchTerm);
+            return bRelevance - aRelevance;
+          }
+          return 0;
         default:
           return 0;
       }
     });
+  }, [collections, searchTerm, sortBy]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    
+    // Update URL with search parameter
+    if (value.trim()) {
+      router.push(`/collections?search=${encodeURIComponent(value.trim())}`);
+    } else {
+      router.push('/collections');
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchTerm('');
+    router.push('/collections');
+  };
 
   return (
     <div className="min-h-screen bg-black">
@@ -53,11 +137,13 @@ export default function CollectionsPageClient({ collections }: CollectionsPageCl
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white max-w-4xl px-4">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
-              Todas las Colecciones
+              {searchTerm.trim() ? `Resultados para "${searchTerm}"` : 'Todas las Colecciones'}
             </h1>
             <p className="text-lg md:text-xl text-gray-200 mb-6 max-w-2xl mx-auto">
-              Explora productos exclusivos de tus series favoritas de Netflix. 
-              Encuentra merchandising oficial de las mejores producciones.
+              {searchTerm.trim() 
+                ? `${filteredCollections.length} colecciones encontradas`
+                : 'Explora productos exclusivos de tus series favoritas de Netflix. Encuentra merchandising oficial de las mejores producciones.'
+              }
             </p>
             <div className="flex items-center justify-center space-x-6 text-sm text-gray-300">
               <div className="flex items-center space-x-2">
@@ -82,11 +168,19 @@ export default function CollectionsPageClient({ collections }: CollectionsPageCl
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Buscar colecciones..."
+                placeholder="Buscar colecciones o series..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:border-red-600 transition-colors"
+                onChange={handleSearchChange}
+                className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg pl-10 pr-10 py-3 focus:outline-none focus:border-red-600 transition-colors"
               />
+              {searchTerm && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-400 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             {/* Controls */}
@@ -100,6 +194,7 @@ export default function CollectionsPageClient({ collections }: CollectionsPageCl
                 <option value="name">Ordenar por nombre</option>
                 <option value="products">Más productos</option>
                 <option value="newest">Más recientes</option>
+                {searchTerm.trim() && <option value="relevance">Más relevantes</option>}
               </select>
 
               {/* View Mode */}
@@ -137,8 +232,24 @@ export default function CollectionsPageClient({ collections }: CollectionsPageCl
             <div className="text-center py-16">
               <div className="text-gray-400 mb-4">
                 <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <h3 className="text-xl font-semibold mb-2">No se encontraron colecciones</h3>
-                <p>Intenta con otros términos de búsqueda</p>
+                <h3 className="text-xl font-semibold mb-2">
+                  {searchTerm.trim() ? 'No se encontraron colecciones' : 'No hay colecciones disponibles'}
+                </h3>
+                <p className="mb-4">
+                  {searchTerm.trim() 
+                    ? `No encontramos colecciones que coincidan con "${searchTerm}"`
+                    : 'Intenta con otros términos de búsqueda'
+                  }
+                </p>
+                {searchTerm.trim() && (
+                  <Button
+                    onClick={clearSearch}
+                    variant="outline"
+                    className="border-gray-600 text-white hover:bg-red-600 hover:border-red-600"
+                  >
+                    Limpiar búsqueda
+                  </Button>
+                )}
               </div>
             </div>
           ) : (
@@ -147,6 +258,7 @@ export default function CollectionsPageClient({ collections }: CollectionsPageCl
               <div className="mb-8">
                 <p className="text-gray-400">
                   Mostrando {filteredCollections.length} de {collections.length} colecciones
+                  {searchTerm.trim() && ` para "${searchTerm}"`}
                 </p>
               </div>
 
