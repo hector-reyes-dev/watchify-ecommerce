@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { Header } from '@/components/ui/header';
 import { Footer } from '@/components/ui/footer';
 import { Button } from '@/components/ui/button';
@@ -93,17 +94,19 @@ export default function CollectionClientPage({ collection, products, slug }: Col
                 <div className="bg-gray-900 rounded-lg overflow-hidden hover:bg-gray-800 transition-all duration-300 hover:scale-105">
                   {/* Product Image */}
                   <div className="relative aspect-square overflow-hidden">
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
+                    <Link href={`/product/${product.id}`}>
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-300 cursor-pointer"
+                      />
+                    </Link>
                     
                     {/* Wishlist Button */}
                     <button
                       onClick={() => toggleWishlist(product.id)}
-                      className="absolute top-3 right-3 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
+                      className="absolute top-3 right-3 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center hover:bg-black/70 transition-colors z-10"
                     >
                       <Heart 
                         className={`w-4 h-4 ${
@@ -116,7 +119,7 @@ export default function CollectionClientPage({ collection, products, slug }: Col
 
                     {/* Discount Badge */}
                     {product.discount && (
-                      <div className="absolute top-3 left-3 bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold">
+                      <div className="absolute top-3 left-3 bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold z-10">
                         -{product.discount}%
                       </div>
                     )}
@@ -131,9 +134,11 @@ export default function CollectionClientPage({ collection, products, slug }: Col
                       <span className="text-xs text-gray-400 ml-2">(4.8)</span>
                     </div>
                     
-                    <h3 className="text-white font-semibold mb-2 line-clamp-2 group-hover:text-red-400 transition-colors">
-                      {product.name}
-                    </h3>
+                    <Link href={`/product/${product.id}`}>
+                      <h3 className="text-white font-semibold mb-2 line-clamp-2 group-hover:text-red-400 transition-colors cursor-pointer">
+                        {product.name}
+                      </h3>
+                    </Link>
                     
                     <p className="text-gray-400 text-sm mb-3 line-clamp-2">
                       {product.description}
