@@ -261,14 +261,14 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
                   {images.map((image, index) => (
                     <div 
                       key={index} 
-                      className="relative flex-shrink-0"
-                      style={{ width: `${100 / images.length}%` }}
+                      className="relative w-full h-full flex-shrink-0"
+                      style={{ width: '100%' }}
                     >
                       <Image
                         src={image}
                         alt={`${product.name} - Vista ${index + 1}`}
                         fill
-                        className="object-cover"
+                        className="object-cover w-full h-full"
                         priority={index === 0}
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
