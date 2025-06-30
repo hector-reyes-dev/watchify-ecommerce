@@ -238,40 +238,70 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
             </div>
           </div>
 
-          {/* Center Column - Product Image */}
+          {/* Center Column - Product Image Slider */}
           <div className="lg:col-span-5 order-1 lg:order-2">
             <div className="relative">
-              {/* Main Image */}
+              {/* Main Image Slider Container */}
               <div className="relative aspect-[4/5] bg-gray-900 rounded-lg overflow-hidden mb-4">
-                <Image
-                  src={images[selectedImage]}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  priority
-                />
+                {/* Image Slider */}
+                <div 
+                  className="flex transition-transform duration-500 ease-in-out h-full"
+                  style={{ transform: `translateX(-${selectedImage * 100}%)` }}
+                >
+                  {images.map((image, index) => (
+                    <div key={index} className="w-full h-full flex-shrink-0 relative">
+                      <Image
+                        src={image}
+                        alt={`${product.name} - Vista ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        priority={index === 0}
+                      />
+                    </div>
+                  ))}
+                </div>
                 
-                {/* Image Navigation */}
+                {/* Navigation Arrows */}
                 {images.length > 1 && (
                   <>
                     <button
                       onClick={prevImage}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-colors"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 hover:border-white/40 group"
+                      aria-label="Imagen anterior"
                     >
-                      <ChevronLeft className="w-5 h-5 text-white" />
+                      <ChevronLeft className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
                     </button>
                     <button
                       onClick={nextImage}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-colors"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 hover:border-white/40 group"
+                      aria-label="Imagen siguiente"
                     >
-                      <ChevronRight className="w-5 h-5 text-white" />
+                      <ChevronRight className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
                     </button>
                   </>
                 )}
 
+                {/* Image Indicators */}
+                {images.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                    {images.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedImage(index)}
+                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                          selectedImage === index 
+                            ? 'bg-white scale-125' 
+                            : 'bg-white/50 hover:bg-white/75'
+                        }`}
+                        aria-label={`Ir a imagen ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+
                 {/* Discount Badge */}
                 {product.discount && (
-                  <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                  <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
                     -{product.discount}%
                   </div>
                 )}
@@ -279,29 +309,45 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
                 {/* Wishlist Button */}
                 <button
                   onClick={() => setIsWishlisted(!isWishlisted)}
-                  className="absolute top-4 right-4 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-colors"
+                  className="absolute top-4 right-4 w-12 h-12 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 hover:border-white/40 group"
+                  aria-label={isWishlisted ? 'Quitar de favoritos' : 'Agregar a favoritos'}
                 >
-                  <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-red-600 text-red-600' : 'text-white'}`} />
+                  <Heart className={`w-6 h-6 transition-all duration-300 group-hover:scale-110 ${
+                    isWishlisted ? 'fill-red-600 text-red-600' : 'text-white'
+                  }`} />
                 </button>
+
+                {/* Image Counter */}
+                {images.length > 1 && (
+                  <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm">
+                    {selectedImage + 1} / {images.length}
+                  </div>
+                )}
               </div>
 
               {/* Thumbnail Images */}
               {images.length > 1 && (
-                <div className="flex space-x-2 overflow-x-auto">
+                <div className="flex space-x-3 overflow-x-auto pb-2">
                   {images.map((image, index) => (
                     <button
                       key={index}
                       onClick={() => setSelectedImage(index)}
-                      className={`flex-shrink-0 w-20 h-20 relative overflow-hidden rounded-lg border-2 transition-colors ${
-                        selectedImage === index ? 'border-red-600' : 'border-gray-700 hover:border-gray-600'
+                      className={`flex-shrink-0 w-20 h-20 relative overflow-hidden rounded-lg border-2 transition-all duration-300 ${
+                        selectedImage === index 
+                          ? 'border-red-600 scale-105 shadow-lg shadow-red-600/25' 
+                          : 'border-gray-700 hover:border-gray-500 hover:scale-102'
                       }`}
                     >
                       <Image
                         src={image}
-                        alt={`${product.name} ${index + 1}`}
+                        alt={`${product.name} - Miniatura ${index + 1}`}
                         fill
                         className="object-cover"
                       />
+                      {/* Active Overlay */}
+                      {selectedImage === index && (
+                        <div className="absolute inset-0 bg-red-600/20" />
+                      )}
                     </button>
                   ))}
                 </div>
