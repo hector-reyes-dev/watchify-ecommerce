@@ -52,7 +52,14 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
     );
   }
 
-  const images = product.images || [product.image];
+  // Create multiple images for demo if only one exists
+  const images = product.images && product.images.length > 1 
+    ? product.images 
+    : [
+        product.image,
+        'https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=600',
+        'https://images.pexels.com/photos/8532939/pexels-photo-8532939.jpeg?auto=compress&cs=tinysrgb&w=600'
+      ];
 
   const handleAddToCart = () => {
     // Validate required selections
@@ -243,19 +250,27 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
             <div className="relative">
               {/* Main Image Slider Container */}
               <div className="relative aspect-[4/5] bg-gray-900 rounded-lg overflow-hidden mb-4">
-                {/* Image Slider */}
+                {/* Image Slider Track */}
                 <div 
-                  className="flex transition-transform duration-500 ease-in-out h-full"
-                  style={{ transform: `translateX(-${selectedImage * 100}%)` }}
+                  className="flex h-full transition-transform duration-500 ease-in-out"
+                  style={{ 
+                    transform: `translateX(-${selectedImage * 100}%)`,
+                    width: `${images.length * 100}%`
+                  }}
                 >
                   {images.map((image, index) => (
-                    <div key={index} className="w-full h-full flex-shrink-0 relative">
+                    <div 
+                      key={index} 
+                      className="relative flex-shrink-0"
+                      style={{ width: `${100 / images.length}%` }}
+                    >
                       <Image
                         src={image}
                         alt={`${product.name} - Vista ${index + 1}`}
                         fill
                         className="object-cover"
                         priority={index === 0}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
                     </div>
                   ))}
@@ -266,14 +281,14 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
                   <>
                     <button
                       onClick={prevImage}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 hover:border-white/40 group"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 hover:border-white/40 group z-10"
                       aria-label="Imagen anterior"
                     >
                       <ChevronLeft className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
                     </button>
                     <button
                       onClick={nextImage}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 hover:border-white/40 group"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 hover:border-white/40 group z-10"
                       aria-label="Imagen siguiente"
                     >
                       <ChevronRight className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
@@ -283,7 +298,7 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
 
                 {/* Image Indicators */}
                 {images.length > 1 && (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
                     {images.map((_, index) => (
                       <button
                         key={index}
@@ -301,7 +316,7 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
 
                 {/* Discount Badge */}
                 {product.discount && (
-                  <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
+                  <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg z-10">
                     -{product.discount}%
                   </div>
                 )}
@@ -309,7 +324,7 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
                 {/* Wishlist Button */}
                 <button
                   onClick={() => setIsWishlisted(!isWishlisted)}
-                  className="absolute top-4 right-4 w-12 h-12 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 hover:border-white/40 group"
+                  className="absolute top-4 right-4 w-12 h-12 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 hover:border-white/40 group z-10"
                   aria-label={isWishlisted ? 'Quitar de favoritos' : 'Agregar a favoritos'}
                 >
                   <Heart className={`w-6 h-6 transition-all duration-300 group-hover:scale-110 ${
@@ -319,7 +334,7 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
 
                 {/* Image Counter */}
                 {images.length > 1 && (
-                  <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm">
+                  <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm z-10">
                     {selectedImage + 1} / {images.length}
                   </div>
                 )}
@@ -343,6 +358,7 @@ export default function ProductClientPage({ product }: ProductClientPageProps) {
                         alt={`${product.name} - Miniatura ${index + 1}`}
                         fill
                         className="object-cover"
+                        sizes="80px"
                       />
                       {/* Active Overlay */}
                       {selectedImage === index && (
